@@ -1,0 +1,537 @@
+import React, { useState, useEffect } from 'react';
+import { Rocket, Box, PartyPopper, Play, Trophy, User, ArrowRight, RefreshCcw, Star, Download } from 'lucide-react';
+
+const SimpleMachinesGame = () => {
+  // --- DATA SOAL (QUESTION BANK) - Updated for Grade 8 ---
+  const questions = [
+    {
+      id: 1,
+      textEn: "What is the Mechanical Advantage (MA) of a single fixed pulley?",
+      textId: "Berapakah Keuntungan Mekanis (KM) dari sebuah katrol tetap tunggal?",
+      options: [
+        { en: "1", id: "1", isCorrect: true },
+        { en: "2", id: "2", isCorrect: false },
+        { en: "0.5", id: "0,5", isCorrect: false },
+        { en: "Depends on weight", id: "Tergantung berat", isCorrect: false },
+      ]
+    },
+    {
+      id: 2,
+      textEn: "If the effort arm is 4m and the load arm is 1m, what is the mechanical advantage?",
+      textId: "Jika lengan kuasa 4m dan lengan beban 1m, berapakah keuntungan mekanisnya?",
+      options: [
+        { en: "0.25", id: "0,25", isCorrect: false },
+        { en: "4", id: "4", isCorrect: true },
+        { en: "5", id: "5", isCorrect: false },
+        { en: "3", id: "3", isCorrect: false },
+      ]
+    },
+    {
+      id: 3,
+      textEn: "Which of the following acts as a Third Class Lever?",
+      textId: "Manakah di bawah ini yang bekerja sebagai Tuas Golongan Ketiga?",
+      options: [
+        { en: "Scissors", id: "Gunting", isCorrect: false },
+        { en: "Wheelbarrow", id: "Gerobak dorong", isCorrect: false },
+        { en: "Stapler", id: "Hecter/Stapler", isCorrect: true },
+        { en: "Seesaw", id: "Jungkat-jungkit", isCorrect: false },
+      ]
+    },
+    {
+      id: 4,
+      textEn: "How does an inclined plane make work easier?",
+      textId: "Bagaimana bidang miring mempermudah pekerjaan?",
+      options: [
+        { en: "Increases force needed", id: "Menambah gaya yang butuh", isCorrect: false },
+        { en: "Increases distance", id: "Menambah jarak tempuh", isCorrect: true },
+        { en: "Reduces work done", id: "Mengurangi usaha total", isCorrect: false },
+        { en: "Shortens distance", id: "Memperpendek jarak", isCorrect: false },
+      ]
+    },
+    {
+      id: 5,
+      textEn: "In a block and tackle pulley system, the MA is equal to...",
+      textId: "Pada sistem katrol majemuk, KM sama dengan...",
+      options: [
+        { en: "Length of rope", id: "Panjang tali", isCorrect: false },
+        { en: "Weight of load", id: "Berat beban", isCorrect: false },
+        { en: "Number of rope segments", id: "Jumlah tali penopang", isCorrect: true },
+        { en: "Size of pulley", id: "Ukuran katrol", isCorrect: false },
+      ]
+    },
+    {
+      id: 6,
+      textEn: "A wheelbarrow is an example of which class of lever?",
+      textId: "Gerobak dorong satu roda adalah contoh tuas golongan ke...?",
+      options: [
+        { en: "First Class", id: "Pertama (Tumpu di tengah)", isCorrect: false },
+        { en: "Second Class", id: "Kedua (Beban di tengah)", isCorrect: true },
+        { en: "Third Class", id: "Ketiga (Kuasa di tengah)", isCorrect: false },
+        { en: "Fourth Class", id: "Keempat", isCorrect: false },
+      ]
+    },
+    {
+      id: 7,
+      textEn: "Which simple machine converts rotational motion into linear motion?",
+      textId: "Pesawat sederhana mana yang mengubah gerak putar menjadi gerak lurus?",
+      options: [
+        { en: "Lever", id: "Tuas", isCorrect: false },
+        { en: "Screw", id: "Sekrup", isCorrect: true },
+        { en: "Fixed Pulley", id: "Katrol Tetap", isCorrect: false },
+        { en: "Wedge", id: "Baji", isCorrect: false },
+      ]
+    },
+  ];
+
+  // --- STATES ---
+  const [gameState, setGameState] = useState('welcome'); // welcome, menu, playing, results
+  const [gameMode, setGameMode] = useState(null); // 'space', 'balloon', 'treasure'
+  const [studentName, setStudentName] = useState('');
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [feedback, setFeedback] = useState(null); // 'correct', 'wrong', null
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+
+  // --- UTILS ---
+  const shuffleArray = (array) => {
+    return [...array].sort(() => Math.random() - 0.5);
+  };
+
+  useEffect(() => {
+    if (gameState === 'playing') {
+      setShuffledOptions(shuffleArray(questions[currentQIndex].options));
+    }
+  }, [currentQIndex, gameState]);
+
+  const handleStartGame = (mode) => {
+    setGameMode(mode);
+    setScore(0);
+    setCurrentQIndex(0);
+    setGameState('playing');
+    setFeedback(null);
+  };
+
+  const handleAnswer = (isCorrect) => {
+    if (feedback !== null) return; // Prevent double click
+
+    if (isCorrect) {
+      setScore(score + 10);
+      setFeedback('correct');
+    } else {
+      setFeedback('wrong');
+    }
+
+    setTimeout(() => {
+      if (currentQIndex < questions.length - 1) {
+        setCurrentQIndex(currentQIndex + 1);
+        setFeedback(null);
+      } else {
+        setGameState('results');
+      }
+    }, 1500);
+  };
+
+  const restartGame = () => {
+    setGameState('menu');
+    setScore(0);
+    setCurrentQIndex(0);
+    setFeedback(null);
+  };
+
+  // --- COMPONENTS ---
+
+  const WelcomeScreen = () => (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-400 to-purple-500 p-4 text-white animate-fade-in">
+      <div className="bg-white/20 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-white/30">
+        <h1 className="text-4xl font-extrabold mb-2 text-yellow-300 drop-shadow-md">Science Fun!</h1>
+        <h2 className="text-xl mb-6 italic">Simple Machines / Pesawat Sederhana</h2>
+        
+        <div className="mb-6 text-left bg-white/10 p-4 rounded-xl">
+          <label className="block text-sm font-bold mb-1 uppercase tracking-wider">Student Name / Nama Siswa</label>
+          <div className="flex items-center bg-white rounded-lg overflow-hidden">
+            <div className="p-3 bg-blue-600">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <input 
+              type="text" 
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+              placeholder="Enter your name here..."
+              className="w-full p-3 text-gray-800 outline-none font-bold"
+            />
+          </div>
+        </div>
+
+        <button 
+          onClick={() => {
+            if(studentName.trim()) setGameState('menu');
+            else alert("Please enter your name / Masukkan nama dulu ya!");
+          }}
+          className="w-full bg-yellow-400 hover:bg-yellow-300 text-purple-900 font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-xl"
+        >
+          START <Play fill="currentColor" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const GameMenu = () => (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-indigo-50 p-4">
+      <div className="max-w-4xl w-full">
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-indigo-900">Hi, {studentName}!</h2>
+            <p className="text-indigo-600">Choose a game / Pilih permainan</p>
+          </div>
+          <div className="bg-white px-4 py-2 rounded-full shadow font-bold text-indigo-600">
+            Kelas 8 (SMP)
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1 */}
+          <button onClick={() => handleStartGame('space')} className="group relative bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-2 border-b-8 border-blue-500">
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white p-4 rounded-full shadow-lg group-hover:scale-110 transition">
+              <Rocket size={40} />
+            </div>
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-1">Space Mission</h3>
+              <p className="text-sm text-gray-500 italic mb-4">Misi Luar Angkasa</p>
+              <div className="text-xs bg-blue-100 text-blue-800 py-1 px-3 rounded-full inline-block">
+                Classic Quiz
+              </div>
+            </div>
+          </button>
+
+          {/* Card 2 */}
+          <button onClick={() => handleStartGame('balloon')} className="group relative bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-2 border-b-8 border-red-500">
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-red-500 text-white p-4 rounded-full shadow-lg group-hover:scale-110 transition">
+              <Box size={40} />
+            </div>
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-1">Balloon Pop</h3>
+              <p className="text-sm text-gray-500 italic mb-4">Pecahkan Balon</p>
+              <div className="text-xs bg-red-100 text-red-800 py-1 px-3 rounded-full inline-block">
+                Interactive
+              </div>
+            </div>
+          </button>
+
+          {/* Card 3 */}
+          <button onClick={() => handleStartGame('treasure')} className="group relative bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-2 border-b-8 border-yellow-500">
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white p-4 rounded-full shadow-lg group-hover:scale-110 transition">
+              <Star size={40} />
+            </div>
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-1">Treasure Chest</h3>
+              <p className="text-sm text-gray-500 italic mb-4">Peti Harta Karun</p>
+              <div className="text-xs bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full inline-block">
+                Mystery Pick
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const FeedbackOverlay = () => {
+    if (!feedback) return null;
+    return (
+      <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className={`p-8 rounded-3xl shadow-2xl transform scale-110 text-center border-8 ${feedback === 'correct' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'}`}>
+          <div className="text-6xl mb-4">{feedback === 'correct' ? '🎉' : '😢'}</div>
+          <h2 className="text-3xl font-bold mb-2">{feedback === 'correct' ? 'Correct! / Benar!' : 'Oops! / Salah!'}</h2>
+          <p className="text-lg font-medium">{feedback === 'correct' ? '+10 Points' : 'Keep trying!'}</p>
+        </div>
+      </div>
+    );
+  };
+
+  const TopBar = () => (
+    <div className="flex justify-between items-center bg-white/90 backdrop-blur p-4 rounded-b-2xl shadow-md fixed top-0 w-full max-w-4xl z-40 left-1/2 transform -translate-x-1/2">
+      <div className="flex items-center gap-2">
+        <div className="bg-gray-200 p-2 rounded-lg"><User size={20} /></div>
+        <span className="font-bold text-gray-700">{studentName}</span>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="text-sm text-gray-500 font-medium">Q: {currentQIndex + 1}/{questions.length}</div>
+        <div className="bg-yellow-100 px-4 py-2 rounded-full border border-yellow-300 flex items-center gap-2">
+          <Trophy size={18} className="text-yellow-600" />
+          <span className="font-bold text-yellow-800">{score}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const QuestionText = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-indigo-500 mb-8 w-full max-w-2xl text-center">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">{questions[currentQIndex].textEn}</h2>
+      <p className="text-md md:text-lg text-indigo-600 italic font-medium">{questions[currentQIndex].textId}</p>
+    </div>
+  );
+
+  // --- GAME MODES ---
+
+  const SpaceGame = () => {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center pt-24 px-4 pb-10">
+        <div className="fixed inset-0 z-0 opacity-20 pointer-events-none" style={{backgroundImage: 'radial-gradient(white 2px, transparent 2px)', backgroundSize: '50px 50px'}}></div>
+        <TopBar />
+        <FeedbackOverlay />
+        
+        <div className="z-10 w-full max-w-2xl flex flex-col items-center">
+          <div className="mb-6 p-4 bg-blue-900/50 rounded-full">
+            <Rocket className="text-white w-16 h-16 animate-bounce" />
+          </div>
+          
+          <QuestionText />
+
+          <div className="grid grid-cols-1 gap-4 w-full">
+            {shuffledOptions.map((opt, idx) => (
+              <button 
+                key={idx}
+                onClick={() => handleAnswer(opt.isCorrect)}
+                className="group relative bg-white hover:bg-blue-50 p-4 rounded-xl shadow-lg transition transform hover:scale-102 border-2 border-transparent hover:border-blue-400 text-left"
+              >
+                <div className="flex items-center">
+                  <div className="bg-blue-100 text-blue-800 font-bold w-10 h-10 rounded-full flex items-center justify-center mr-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                    {String.fromCharCode(65 + idx)}
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-800 text-lg">{opt.en}</div>
+                    <div className="text-gray-500 italic text-sm">{opt.id}</div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const BalloonGame = () => {
+    return (
+      <div className="min-h-screen bg-sky-200 flex flex-col items-center pt-24 px-4 overflow-hidden relative">
+        <TopBar />
+        <FeedbackOverlay />
+
+        {/* Clouds decoration */}
+        <div className="absolute top-20 left-10 text-white/60"><div className="bg-white/40 h-12 w-24 rounded-full blur-xl"></div></div>
+        <div className="absolute top-40 right-20 text-white/60"><div className="bg-white/40 h-16 w-32 rounded-full blur-xl"></div></div>
+
+        <div className="z-10 w-full max-w-2xl flex flex-col items-center">
+          <QuestionText />
+
+          <div className="flex flex-wrap justify-center gap-6 mt-8 w-full">
+            {shuffledOptions.map((opt, idx) => (
+              <button 
+                key={idx}
+                onClick={() => handleAnswer(opt.isCorrect)}
+                className={`
+                  relative w-32 h-40 md:w-40 md:h-48 rounded-[50%] 
+                  flex flex-col items-center justify-center p-4 text-center shadow-xl
+                  transition transform hover:-translate-y-4 active:scale-95 cursor-pointer
+                  ${['bg-red-400', 'bg-green-400', 'bg-yellow-400', 'bg-purple-400'][idx % 4]}
+                  border-b-4 border-black/10
+                `}
+              >
+                {/* Balloon String */}
+                <div className="absolute -bottom-12 left-1/2 w-0.5 h-12 bg-gray-600 opacity-50"></div>
+                
+                <div className="text-white drop-shadow-md">
+                  <div className="font-bold text-lg leading-tight mb-1">{opt.en}</div>
+                  <div className="text-xs md:text-sm italic opacity-90">{opt.id}</div>
+                </div>
+                {/* Shine effect */}
+                <div className="absolute top-4 right-4 w-4 h-8 bg-white/30 rounded-full transform rotate-45"></div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const TreasureGame = () => {
+    return (
+      <div className="min-h-screen bg-amber-100 flex flex-col items-center pt-24 px-4 pb-10" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23d97706\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'}}>
+        <TopBar />
+        <FeedbackOverlay />
+
+        <div className="z-10 w-full max-w-2xl flex flex-col items-center">
+          <QuestionText />
+
+          <div className="grid grid-cols-2 gap-4 w-full mt-4">
+            {shuffledOptions.map((opt, idx) => (
+              <button 
+                key={idx}
+                onClick={() => handleAnswer(opt.isCorrect)}
+                className="bg-amber-300 border-4 border-amber-600 rounded-2xl p-4 flex flex-col items-center justify-between hover:bg-amber-200 transition transform hover:scale-105 active:scale-95 shadow-xl relative overflow-hidden"
+              >
+                <Box className="text-amber-700 w-12 h-12 mb-2" strokeWidth={1.5} />
+                <div className="text-center w-full bg-amber-50/50 p-2 rounded-lg">
+                  <div className="font-bold text-amber-900 text-md">{opt.en}</div>
+                  <div className="text-amber-800 text-xs italic">{opt.id}</div>
+                </div>
+                {/* Lock icon */}
+                <div className="absolute top-2 right-2 text-amber-800 opacity-30"><div className="w-2 h-2 rounded-full bg-black"></div></div>
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-8 text-amber-800 font-bold opacity-60 text-sm">Pick the chest with the correct answer!</div>
+        </div>
+      </div>
+    );
+  };
+
+  const ResultScreen = () => {
+    let messageEn = "Good Job!";
+    let messageId = "Kerja Bagus!";
+    const percentage = (score / (questions.length * 10)) * 100;
+
+    if (percentage === 100) {
+      messageEn = "Perfect Score!";
+      messageId = "Nilai Sempurna!";
+    } else if (percentage > 70) {
+      messageEn = "Great Work!";
+      messageId = "Hebat!";
+    } else {
+      messageEn = "Keep Practicing!";
+      messageId = "Teruslah Berlatih!";
+    }
+
+    const handleDownload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+  
+      // Background Gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+      gradient.addColorStop(0, '#60a5fa'); // blue-400
+      gradient.addColorStop(1, '#a78bfa'); // purple-400
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 800, 600);
+  
+      // Decorative Border
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.lineWidth = 15;
+      ctx.strokeRect(20, 20, 760, 560);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(35, 35, 730, 530);
+  
+      // Header Text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = "rgba(0,0,0,0.3)";
+      ctx.shadowBlur = 10;
+      ctx.fillText('Science Achievement', 400, 100);
+      
+      ctx.font = 'italic 28px Arial';
+      ctx.shadowBlur = 0;
+      ctx.fillText('Pencapaian IPA - Pesawat Sederhana', 400, 145);
+  
+      // Star Icon Circle
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.beginPath();
+      ctx.arc(400, 240, 70, 0, Math.PI * 2);
+      ctx.fill();
+  
+      // Big Score
+      ctx.fillStyle = '#facc15'; // yellow
+      ctx.font = 'bold 80px Arial';
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 15;
+      ctx.fillText(score, 400, 265);
+      
+      // Student Name
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 50px Arial';
+      ctx.shadowBlur = 10;
+      ctx.fillText(studentName, 400, 380);
+  
+      // Feedback Message
+      ctx.font = '30px Arial';
+      ctx.shadowBlur = 0;
+      ctx.fillText(messageEn, 400, 440);
+      ctx.font = 'italic 24px Arial';
+      ctx.fillText(messageId, 400, 470);
+  
+      // Footer
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.font = '18px Arial';
+      ctx.fillText(`Date: ${new Date().toLocaleDateString()} • Kelas 8 (SMP)`, 400, 550);
+  
+      // Trigger Download
+      const link = document.createElement('a');
+      link.download = `Sertifikat-IPA-${studentName}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-t from-green-400 to-blue-500 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-4 bg-yellow-400"></div>
+          
+          <div className="flex justify-center -mt-16 mb-4">
+            <div className="bg-yellow-100 p-6 rounded-full border-4 border-white shadow-lg">
+              <PartyPopper size={64} className="text-yellow-600" />
+            </div>
+          </div>
+
+          <h2 className="text-3xl font-bold text-gray-800 mb-1">{studentName}</h2>
+          <p className="text-gray-500 text-sm mb-6">Kelas 8 (SMP) • Simple Machines Assessment</p>
+
+          <div className="bg-blue-50 rounded-xl p-6 mb-6">
+            <div className="text-sm uppercase tracking-wide text-blue-500 font-bold mb-1">Final Score / Nilai Akhir</div>
+            <div className="text-6xl font-extrabold text-blue-600">{score}</div>
+            <div className="text-gray-400 text-xs mt-2">Max Score: {questions.length * 10}</div>
+          </div>
+
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-gray-700">{messageEn}</h3>
+            <p className="text-gray-500 italic">{messageId}</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleDownload}
+              className="w-full bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md transform active:scale-95"
+            >
+              <Download size={18} /> Download Result / Unduh Hasil
+            </button>
+
+            <button 
+              onClick={restartGame}
+              className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md"
+            >
+              <RefreshCcw size={18} /> Play Again / Main Lagi
+            </button>
+          </div>
+          
+          <p className="mt-4 text-xs text-gray-400">Show this screen or the download to your teacher.<br/>Tunjukkan layar atau hasil unduhan ini ke gurumu.</p>
+        </div>
+      </div>
+    );
+  };
+
+  // --- RENDER MAIN ---
+  return (
+    <div className="font-sans text-gray-800 antialiased selection:bg-yellow-200 selection:text-black">
+      {gameState === 'welcome' && <WelcomeScreen />}
+      {gameState === 'menu' && <GameMenu />}
+      {gameState === 'playing' && gameMode === 'space' && <SpaceGame />}
+      {gameState === 'playing' && gameMode === 'balloon' && <BalloonGame />}
+      {gameState === 'playing' && gameMode === 'treasure' && <TreasureGame />}
+      {gameState === 'results' && <ResultScreen />}
+    </div>
+  );
+};
+
+export default SimpleMachinesGame;
